@@ -1,195 +1,467 @@
 // src/components/ComoFunciona.jsx
 import React from 'react';
-import { FaRobot, FaCheckCircle, FaLightbulb, FaUsers } from 'react-icons/fa';
-
+import { motion } from 'framer-motion';
+import { 
+  FaRobot, 
+  FaCheckCircle, 
+  FaLightbulb, 
+  FaUsers, 
+  FaArrowRight,
+  FaStar,
+  FaGraduationCap,
+  FaChartLine
+} from 'react-icons/fa';
 
 function ComoFunciona() {
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Cabeçalho Atraente */}
-      <header className="bg-blue-600 text-white py-16">
-        <div className="container mx-auto text-center px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Como Funciona</h1>
-          <p className="text-lg md:text-2xl">Transformando suas redações com a Inteligência Artificial</p>
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-secondary-50 to-primary-50">
+      {/* Cabeçalho Moderno */}
+      <motion.header 
+        className="bg-gradient-to-r from-primary-600 via-primary-700 to-secondary-600 text-white py-20 relative overflow-hidden"
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="container mx-auto text-center px-4 relative z-10">
+          <motion.h1 
+            className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-primary-100 bg-clip-text text-transparent"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            Como Funciona
+          </motion.h1>
+          <motion.p 
+            className="text-xl md:text-2xl text-primary-100 max-w-3xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            Transformando suas redações com a Inteligência Artificial mais avançada
+          </motion.p>
         </div>
-      </header>
+      </motion.header>
 
-      {/* Seção de Introdução */}
-      <section className="py-12 bg-white">
+      {/* Seção de Introdução Moderna */}
+      <motion.section 
+        className="py-20 bg-white relative"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+      >
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-semibold mb-6">A Revolução da IA na Preparação para o ENEM</h2>
-          <p className="text-gray-700 text-lg max-w-2xl mx-auto">
-            Nossa plataforma utiliza a mais avançada tecnologia de Inteligência Artificial para oferecer feedbacks personalizados, identificar pontos de melhoria e proporcionar uma experiência de aprendizado única e eficiente. Tudo isso para garantir que você alcance a excelência nas suas redações para o ENEM.
-          </p>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-8 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+              A Revolução da IA na Preparação para o ENEM
+            </h2>
+            <p className="text-gray-700 text-xl max-w-4xl mx-auto leading-relaxed">
+              Nossa plataforma utiliza a mais avançada tecnologia de Inteligência Artificial para oferecer feedbacks personalizados, identificar pontos de melhoria e proporcionar uma experiência de aprendizado única e eficiente. Tudo isso para garantir que você alcance a excelência nas suas redações para o ENEM.
+            </p>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* Benefícios da IA na Melhoria das Redações */}
-      <section className="py-12 bg-gray-100">
+      {/* Benefícios da IA Modernos */}
+      <motion.section 
+        className="py-20 bg-gradient-to-br from-primary-50 to-secondary-50 relative"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+      >
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-semibold text-center mb-8">Por Que Utilizar a IA?</h2>
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold text-center mb-16 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            viewport={{ once: true }}
+          >
+            Por Que Utilizar a IA?
+          </motion.h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Benefício 1 */}
-            <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-              <FaRobot className="text-blue-500 w-12 h-12 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Automatização Inteligente</h3>
-              <p className="text-gray-600">
+            <motion.div 
+              className="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 text-center group hover:-translate-y-2"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              viewport={{ once: true }}
+              whileHover={{ scale: 1.05 }}
+            >
+              <div className="w-16 h-16 bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:rotate-12 transition-transform duration-300">
+                <FaRobot className="text-white text-2xl" />
+              </div>
+              <h3 className="text-xl font-bold mb-4 text-gray-800">Automatização Inteligente</h3>
+              <p className="text-gray-600 leading-relaxed">
                 Receba análises detalhadas e feedbacks instantâneos sobre sua redação, permitindo um aprendizado contínuo e eficiente.
               </p>
-            </div>
+            </motion.div>
             {/* Benefício 2 */}
-            <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-              <FaCheckCircle className="text-green-500 w-12 h-12 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Qualidade Superior</h3>
-              <p className="text-gray-600">
+            <motion.div 
+              className="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 text-center group hover:-translate-y-2"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+              whileHover={{ scale: 1.05 }}
+            >
+              <div className="w-16 h-16 bg-gradient-to-r from-success-500 to-success-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:rotate-12 transition-transform duration-300">
+                <FaCheckCircle className="text-white text-2xl" />
+              </div>
+              <h3 className="text-xl font-bold mb-4 text-gray-800">Qualidade Superior</h3>
+              <p className="text-gray-600 leading-relaxed">
                 Melhore sua escrita com sugestões precisas que elevam a qualidade e a coesão do seu texto.
               </p>
-            </div>
+            </motion.div>
             {/* Benefício 3 */}
-            <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-              <FaLightbulb className="text-yellow-500 w-12 h-12 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Inovação Constante</h3>
-              <p className="text-gray-600">
+            <motion.div 
+              className="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 text-center group hover:-translate-y-2"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              viewport={{ once: true }}
+              whileHover={{ scale: 1.05 }}
+            >
+              <div className="w-16 h-16 bg-gradient-to-r from-warning-500 to-warning-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:rotate-12 transition-transform duration-300">
+                <FaLightbulb className="text-white text-2xl" />
+              </div>
+              <h3 className="text-xl font-bold mb-4 text-gray-800">Inovação Constante</h3>
+              <p className="text-gray-600 leading-relaxed">
                 Utilize ferramentas inovadoras que acompanham as tendências e exigências do ENEM.
               </p>
-            </div>
+            </motion.div>
             {/* Benefício 4 */}
-            <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-              <FaUsers className="text-purple-500 w-12 h-12 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Suporte Personalizado</h3>
-              <p className="text-gray-600">
+            <motion.div 
+              className="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 text-center group hover:-translate-y-2"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              viewport={{ once: true }}
+              whileHover={{ scale: 1.05 }}
+            >
+              <div className="w-16 h-16 bg-gradient-to-r from-secondary-500 to-secondary-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:rotate-12 transition-transform duration-300">
+                <FaUsers className="text-white text-2xl" />
+              </div>
+              <h3 className="text-xl font-bold mb-4 text-gray-800">Suporte Personalizado</h3>
+              <p className="text-gray-600 leading-relaxed">
                 Tenha acesso a um suporte dedicado que entende suas necessidades e oferece soluções sob medida.
               </p>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* Como Funciona o Processo */}
-      <section className="py-12 bg-white">
+      {/* Processo Moderno */}
+      <motion.section 
+        className="py-20 bg-white relative"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+      >
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-semibold text-center mb-8">Como Funciona</h2>
-          <div className="space-y-8">
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold text-center mb-16 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            viewport={{ once: true }}
+          >
+            Como Funciona o Processo
+          </motion.h2>
+          
+          <div className="space-y-20">
             {/* Passo 1 */}
-            <div className="flex flex-col md:flex-row items-center">
-              <div className="md:w-1/2">
-                <FaRobot className="text-blue-500 w-16 h-16 mb-4" />
-                <h3 className="text-2xl font-semibold mb-2">1. Submeta Sua Redação</h3>
-                <p className="text-gray-700">
-                  Envie sua redação diretamente para nossa plataforma de forma rápida e segura.
+            <motion.div 
+              className="flex flex-col lg:flex-row items-center gap-12"
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              <div className="lg:w-1/2">
+                <div className="flex items-center mb-6">
+                  <div className="w-20 h-20 bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mr-6">
+                    <FaRobot className="text-white text-3xl" />
+                  </div>
+                  <div className="text-6xl font-bold text-primary-200">01</div>
+                </div>
+                <h3 className="text-3xl font-bold mb-4 text-gray-800">Submeta Sua Redação</h3>
+                <p className="text-gray-600 text-lg leading-relaxed mb-6">
+                  Envie sua redação diretamente para nossa plataforma de forma rápida e segura. Nossa interface intuitiva torna o processo simples e eficiente.
                 </p>
+                <div className="flex items-center text-primary-600 font-semibold">
+                  <span>Começar agora</span>
+                  <FaArrowRight className="ml-2" />
+                </div>
               </div>
-              <div className="md:w-1/2 mt-6 md:mt-0">
-                <img
-                  src="https://via.placeholder.com/400x300" // Substitua pelo link da sua imagem
-                  alt="Submeter Redação"
-                  className="rounded-lg shadow-lg"
-                />
+              <div className="lg:w-1/2">
+                <div className="bg-gradient-to-br from-primary-100 to-primary-200 rounded-3xl p-8 h-80 flex items-center justify-center">
+                  <div className="text-center">
+                    <FaGraduationCap className="text-6xl text-primary-600 mx-auto mb-4" />
+                    <p className="text-primary-700 font-semibold">Interface Intuitiva</p>
+                  </div>
+                </div>
               </div>
-            </div>
+            </motion.div>
+
             {/* Passo 2 */}
-            <div className="flex flex-col md:flex-row-reverse items-center">
-              <div className="md:w-1/2">
-                <FaCheckCircle className="text-green-500 w-16 h-16 mb-4" />
-                <h3 className="text-2xl font-semibold mb-2">2. Análise Inteligente</h3>
-                <p className="text-gray-700">
-                  Nossa IA avalia sua redação com base nas 5 competências do ENEM, identificando pontos fortes e áreas de melhoria.
+            <motion.div 
+              className="flex flex-col lg:flex-row-reverse items-center gap-12"
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <div className="lg:w-1/2">
+                <div className="flex items-center mb-6">
+                  <div className="w-20 h-20 bg-gradient-to-r from-success-500 to-success-600 rounded-2xl flex items-center justify-center mr-6">
+                    <FaCheckCircle className="text-white text-3xl" />
+                  </div>
+                  <div className="text-6xl font-bold text-success-200">02</div>
+                </div>
+                <h3 className="text-3xl font-bold mb-4 text-gray-800">Análise Inteligente</h3>
+                <p className="text-gray-600 text-lg leading-relaxed mb-6">
+                  Nossa IA avalia sua redação com base nas 5 competências do ENEM, identificando pontos fortes e áreas de melhoria com precisão cirúrgica.
                 </p>
+                <div className="flex items-center text-success-600 font-semibold">
+                  <span>Análise detalhada</span>
+                  <FaArrowRight className="ml-2" />
+                </div>
               </div>
-              <div className="md:w-1/2 mt-6 md:mt-0">
-                <img
-                  src="https://via.placeholder.com/400x300" // Substitua pelo link da sua imagem
-                  alt="Análise Inteligente"
-                  className="rounded-lg shadow-lg"
-                />
+              <div className="lg:w-1/2">
+                <div className="bg-gradient-to-br from-success-100 to-success-200 rounded-3xl p-8 h-80 flex items-center justify-center">
+                  <div className="text-center">
+                    <FaChartLine className="text-6xl text-success-600 mx-auto mb-4" />
+                    <p className="text-success-700 font-semibold">IA Avançada</p>
+                  </div>
+                </div>
               </div>
-            </div>
+            </motion.div>
+
             {/* Passo 3 */}
-            <div className="flex flex-col md:flex-row items-center">
-              <div className="md:w-1/2">
-                <FaLightbulb className="text-yellow-500 w-16 h-16 mb-4" />
-                <h3 className="text-2xl font-semibold mb-2">3. Feedback Personalizado</h3>
-                <p className="text-gray-700">
-                  Receba sugestões detalhadas e personalizadas para aprimorar sua redação e alcançar a pontuação desejada.
+            <motion.div 
+              className="flex flex-col lg:flex-row items-center gap-12"
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              viewport={{ once: true }}
+            >
+              <div className="lg:w-1/2">
+                <div className="flex items-center mb-6">
+                  <div className="w-20 h-20 bg-gradient-to-r from-warning-500 to-warning-600 rounded-2xl flex items-center justify-center mr-6">
+                    <FaLightbulb className="text-white text-3xl" />
+                  </div>
+                  <div className="text-6xl font-bold text-warning-200">03</div>
+                </div>
+                <h3 className="text-3xl font-bold mb-4 text-gray-800">Feedback Personalizado</h3>
+                <p className="text-gray-600 text-lg leading-relaxed mb-6">
+                  Receba sugestões detalhadas e personalizadas para aprimorar sua redação e alcançar a pontuação desejada no ENEM.
                 </p>
+                <div className="flex items-center text-warning-600 font-semibold">
+                  <span>Melhorias específicas</span>
+                  <FaArrowRight className="ml-2" />
+                </div>
               </div>
-              <div className="md:w-1/2 mt-6 md:mt-0">
-                <img
-                  src="https://via.placeholder.com/400x300" // Substitua pelo link da sua imagem
-                  alt="Feedback Personalizado"
-                  className="rounded-lg shadow-lg"
-                />
+              <div className="lg:w-1/2">
+                <div className="bg-gradient-to-br from-warning-100 to-warning-200 rounded-3xl p-8 h-80 flex items-center justify-center">
+                  <div className="text-center">
+                    <FaStar className="text-6xl text-warning-600 mx-auto mb-4" />
+                    <p className="text-warning-700 font-semibold">Feedback Detalhado</p>
+                  </div>
+                </div>
               </div>
-            </div>
+            </motion.div>
+
             {/* Passo 4 */}
-            <div className="flex flex-col md:flex-row-reverse items-center">
-              <div className="md:w-1/2">
-                <FaUsers className="text-purple-500 w-16 h-16 mb-4" />
-                <h3 className="text-2xl font-semibold mb-2">4. Melhoria Contínua</h3>
-                <p className="text-gray-700">
+            <motion.div 
+              className="flex flex-col lg:flex-row-reverse items-center gap-12"
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              viewport={{ once: true }}
+            >
+              <div className="lg:w-1/2">
+                <div className="flex items-center mb-6">
+                  <div className="w-20 h-20 bg-gradient-to-r from-secondary-500 to-secondary-600 rounded-2xl flex items-center justify-center mr-6">
+                    <FaUsers className="text-white text-3xl" />
+                  </div>
+                  <div className="text-6xl font-bold text-secondary-200">04</div>
+                </div>
+                <h3 className="text-3xl font-bold mb-4 text-gray-800">Melhoria Contínua</h3>
+                <p className="text-gray-600 text-lg leading-relaxed mb-6">
                   Com o uso contínuo da plataforma, veja sua evolução ao longo do tempo e prepare-se para atingir seus objetivos no ENEM.
                 </p>
+                <div className="flex items-center text-secondary-600 font-semibold">
+                  <span>Evolução constante</span>
+                  <FaArrowRight className="ml-2" />
+                </div>
               </div>
-              <div className="md:w-1/2 mt-6 md:mt-0">
-                <img
-                  src="https://via.placeholder.com/400x300" // Substitua pelo link da sua imagem
-                  alt="Melhoria Contínua"
-                  className="rounded-lg shadow-lg"
-                />
+              <div className="lg:w-1/2">
+                <div className="bg-gradient-to-br from-secondary-100 to-secondary-200 rounded-3xl p-8 h-80 flex items-center justify-center">
+                  <div className="text-center">
+                    <FaChartLine className="text-6xl text-secondary-600 mx-auto mb-4" />
+                    <p className="text-secondary-700 font-semibold">Progresso Contínuo</p>
+                  </div>
+                </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* Testemunhos de Usuários */}
-      <section className="py-12 bg-gray-100">
+      {/* Testemunhos Modernos */}
+      <motion.section 
+        className="py-20 bg-gradient-to-br from-primary-50 to-secondary-50 relative"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+      >
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-semibold text-center mb-8">O Que Nossos Usuários Dizem</h2>
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold text-center mb-16 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            viewport={{ once: true }}
+          >
+            O Que Nossos Usuários Dizem
+          </motion.h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Testemunho 1 */}
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <p className="text-gray-700 mb-4">
+            <motion.div 
+              className="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 group hover:-translate-y-2"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-white font-bold text-lg">A</span>
+                </div>
+                <div>
+                  <h4 className="font-bold text-lg text-gray-800">Ana Clara</h4>
+                  <p className="text-primary-600 text-sm font-medium">Aluno do Ensino Médio</p>
+                </div>
+              </div>
+              <p className="text-gray-700 leading-relaxed mb-4">
                 "A plataforma transformou minha maneira de escrever. As análises são detalhadas e me ajudaram a melhorar significativamente minhas redações para o ENEM."
               </p>
-              <h4 className="font-semibold text-lg">Ana Clara</h4>
-              <p className="text-gray-500 text-sm">Aluno do Ensino Médio</p>
-            </div>
+              <div className="flex text-warning-500">
+                {[...Array(5)].map((_, i) => (
+                  <FaStar key={i} className="text-sm" />
+                ))}
+              </div>
+            </motion.div>
             {/* Testemunho 2 */}
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <p className="text-gray-700 mb-4">
+            <motion.div 
+              className="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 group hover:-translate-y-2"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-success-500 to-success-600 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-white font-bold text-lg">J</span>
+                </div>
+                <div>
+                  <h4 className="font-bold text-lg text-gray-800">João Pedro</h4>
+                  <p className="text-success-600 text-sm font-medium">Estudante Universitário</p>
+                </div>
+              </div>
+              <p className="text-gray-700 leading-relaxed mb-4">
                 "Com o feedback personalizado da IA, consegui identificar e corrigir meus erros mais rapidamente. Recomendo para todos que querem se destacar no ENEM."
               </p>
-              <h4 className="font-semibold text-lg">João Pedro</h4>
-              <p className="text-gray-500 text-sm">Estudante Universitário</p>
-            </div>
+              <div className="flex text-warning-500">
+                {[...Array(5)].map((_, i) => (
+                  <FaStar key={i} className="text-sm" />
+                ))}
+              </div>
+            </motion.div>
             {/* Testemunho 3 */}
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <p className="text-gray-700 mb-4">
+            <motion.div 
+              className="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 group hover:-translate-y-2"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              viewport={{ once: true }}
+            >
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-secondary-500 to-secondary-600 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-white font-bold text-lg">M</span>
+                </div>
+                <div>
+                  <h4 className="font-bold text-lg text-gray-800">Maria Fernanda</h4>
+                  <p className="text-secondary-600 text-sm font-medium">Profissional em transição</p>
+                </div>
+              </div>
+              <p className="text-gray-700 leading-relaxed mb-4">
                 "A qualidade das sugestões é incrível! Minha confiança na escrita aumentou muito e estou mais preparado para o exame."
               </p>
-              <h4 className="font-semibold text-lg">Maria Fernanda</h4>
-              <p className="text-gray-500 text-sm">Profissional em transição de carreira</p>
-            </div>
+              <div className="flex text-warning-500">
+                {[...Array(5)].map((_, i) => (
+                  <FaStar key={i} className="text-sm" />
+                ))}
+              </div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* Chamada para Ação (CTA) */}
-      <section className="py-12 bg-blue-600 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-semibold mb-4">Pronto para Transformar Sua Redação?</h2>
-          <p className="text-lg mb-6">
-            Junte-se a milhares de estudantes que já estão elevando suas redações com nossa plataforma inteligente.
-          </p>
-          <a
-            href="/signup"
-            className="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold hover:bg-gray-200 transition duration-300"
+      {/* CTA Moderno */}
+      <motion.section 
+        className="py-20 bg-gradient-to-r from-primary-600 via-primary-700 to-secondary-600 text-white relative overflow-hidden"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+      >
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold mb-6"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            viewport={{ once: true }}
           >
-            Comece Agora
-          </a>
+            Pronto para Transformar Sua Redação?
+          </motion.h2>
+          <motion.p 
+            className="text-xl mb-8 max-w-3xl mx-auto text-primary-100"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            viewport={{ once: true }}
+          >
+            Junte-se a milhares de estudantes que já estão elevando suas redações com nossa plataforma inteligente.
+          </motion.p>
+          <motion.a
+            href="/signup"
+            className="inline-flex items-center bg-white text-primary-600 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-primary-50 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1"
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            viewport={{ once: true }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <span>Comece Agora</span>
+            <FaArrowRight className="ml-3" />
+          </motion.a>
         </div>
-      </section>
+      </motion.section>
     </div>
   );
 }
