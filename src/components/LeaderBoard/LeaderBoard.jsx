@@ -4,7 +4,6 @@ import { db } from '../../firebaseConfig';
 import {
   collection,
   query,
-  orderBy,
   limit,
   getDocs,
   where,
@@ -17,17 +16,23 @@ function Leaderboard() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        // 1. Obter as redações com as maiores pontuações
+        // 1. Obter as redações (sem orderBy para evitar problemas de índice)
         const redacoesQuery = query(
           collection(db, 'redacoes'),
-          orderBy('avaliacao.pontuacaoTotal', 'desc'),
-          limit(10) // Top 10 alunos
+          limit(50) // Buscar mais para ter uma boa amostra
         );
         const redacoesSnapshot = await getDocs(redacoesQuery);
         const redacoesData = redacoesSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
+        
+        // Ordenar no cliente por pontuação (maior primeiro)
+        redacoesData.sort((a, b) => {
+          const pontuacaoA = a.pontuacaoTotal || (a.avaliacao && a.avaliacao.pontuacaoTotal) || 0;
+          const pontuacaoB = b.pontuacaoTotal || (b.avaliacao && b.avaliacao.pontuacaoTotal) || 0;
+          return pontuacaoB - pontuacaoA;
+        });
 
         // 2. Obter uma lista de IDs de usuários únicos
         const usuarioIds = [...new Set(redacoesData.map((redacao) => redacao.usuarioId))];

@@ -16,7 +16,7 @@ function Card({
   motionProps = {},
   ...props 
 }) {
-  const baseClasses = 'rounded-2xl transition-all duration-300';
+  const baseClasses = 'rounded-2xl transition-shadow duration-300';
   
   const variants = {
     default: 'bg-white border border-gray-200 shadow-sm',

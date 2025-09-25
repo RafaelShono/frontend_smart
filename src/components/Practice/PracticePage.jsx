@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { db } from '../../firebaseConfig';
@@ -9,10 +9,13 @@ import {
   doc,
   updateDoc,
   getDoc,
+  setDoc,
   increment,
+  query,
+  orderBy,
+  limit,
 } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { 
   FaPenFancy, 
   FaBrain, 
@@ -21,16 +24,14 @@ import {
   FaFileAlt, 
   FaExclamationTriangle,
   FaLightbulb,
-  FaBookOpen,
-  FaGraduationCap,
   FaRocket,
   FaMagic,
-  FaRobot,
-  FaArrowRight,
   FaTimes,
-  FaEdit
+  FaEdit,
+  FaExternalLinkAlt,
+  FaSearch,
+  FaSpinner
 } from 'react-icons/fa';
-import Button from '../ui/Button';
 import Card from '../ui/Card';
 import Sidebar from '../ui/Sidebar';
 import Avaliacao from '../Avalicao/Avaliacao';
@@ -43,26 +44,44 @@ function PracticePage() {
   const [temas, setTemas] = useState([]);
   const [temaSelecionado, setTemaSelecionado] = useState(null);
   const { usuarioAtual } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingTheme, setIsGeneratingTheme] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isSuggesting, setIsSuggesting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [userData, setUserData] = useState(null);
-  const navigate = useNavigate();
   const textareaRef = useRef(null);
+  
 
   // Carregar temas do Firestore
   useEffect(() => {
     const carregarTemas = async () => {
       try {
         const temasRef = collection(db, 'temas');
-        const q = query(temasRef, orderBy('dataCriacao', 'desc'), limit(20));
-        const querySnapshot = await getDocs(q);
-        const temasData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        
+        let querySnapshot;
+        try {
+          // Tentar com ordenação primeiro
+          const q = query(temasRef, orderBy('dataCriacao', 'desc'), limit(20));
+          querySnapshot = await getDocs(q);
+        } catch (orderError) {
+          // Fallback: carregar sem ordenação
+          querySnapshot = await getDocs(temasRef);
+        }
+        
+        
+        const temasData = querySnapshot.docs
+          .map(doc => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              ...data
+            };
+          })
+          .filter(tema => tema && tema.id); // Filtrar temas válidos
+        
         setTemas(temasData);
       } catch (error) {
-        console.error('Erro ao carregar temas:', error);
+        setTemas([]); // Garantir que temas seja um array vazio em caso de erro
       }
     };
 
@@ -79,7 +98,6 @@ function PracticePage() {
             setUserData(userDoc.data());
           }
         } catch (error) {
-          console.error('Erro ao carregar dados do usuário:', error);
         }
       }
     };
@@ -103,30 +121,71 @@ function PracticePage() {
     return tempoMinutos;
   };
 
-  // Gerar tema com IA
+  // Gerar tema com IA (método original)
   const gerarTema = async () => {
-    setIsLoading(true);
+    setIsGeneratingTheme(true);
     setErrorMessage('');
     
     try {
-      const response = await axios.post(`${API_CONFIG.BASE_URL}/news-agent/generate-theme`, {
-        userId: usuarioAtual?.uid
+      // Obter token de autenticação
+      const token = await usuarioAtual.getIdToken();
+      
+      // Áreas de tema disponíveis
+      const areas = ['social', 'educacao', 'meio-ambiente', 'tecnologia', 'saude', 'cultura', 'politica', 'economia'];
+      const niveis = ['ensino-medio', 'vestibular', 'concurso', 'enem'];
+      
+      // Selecionar aleatoriamente
+      const areaTema = areas[Math.floor(Math.random() * areas.length)];
+      const nivelProva = niveis[Math.floor(Math.random() * niveis.length)];
+      
+      // Contextos específicos opcionais
+      const contextos = [
+        'Foco em dados de 2024',
+        'Pandemia e pós-pandemia',
+        'Eleições e democracia',
+        'Sustentabilidade',
+        'Transformação digital',
+        'Desigualdades sociais',
+        'Mudanças climáticas',
+        'Inteligência artificial'
+      ];
+      const contextoEspecifico = Math.random() > 0.5 ? contextos[Math.floor(Math.random() * contextos.length)] : '';
+      
+      // Quantidade de textos motivadores
+      const quantidadeTextos = Math.floor(Math.random() * 3) + 3; // 3-5 textos
+      
+      const response = await axios.post(API_CONFIG.buildURL('/api/generate-theme-ai'), {
+        areaTema,
+        nivelProva,
+        contextoEspecifico,
+        quantidadeTextos
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
       
       if (response.data.success) {
-        const novoTema = response.data.theme;
-        setTemas(prev => [novoTema, ...prev]);
-        setTemaSelecionado(novoTema);
+        const novoTema = response.data.tema;
+        
+        // Verificar se o tema é válido antes de adicionar
+        if (novoTema && novoTema.id) {
+          setTemas(prev => [novoTema, ...prev]);
+          setTemaSelecionado(novoTema);
+        } else {
+          setErrorMessage('Erro: Tema gerado é inválido');
+        }
       }
     } catch (error) {
       setErrorMessage('Erro ao gerar tema. Tente novamente.');
-      console.error('Erro ao gerar tema:', error);
     } finally {
-      setIsLoading(false);
+      setIsGeneratingTheme(false);
     }
   };
 
-  // Analisar redação
+
+  // Analisar redação com Agente Corretor ENEM
   const analisarRedacao = async () => {
     if (!texto.trim()) {
       setErrorMessage('Por favor, escreva sua redação antes de analisar.');
@@ -138,74 +197,111 @@ function PracticePage() {
       return;
     }
 
-    setIsLoading(true);
+    setIsAnalyzing(true);
     setErrorMessage('');
 
     try {
-      const response = await axios.post(`${API_CONFIG.BASE_URL}/analyze`, {
+      const token = await usuarioAtual.getIdToken();
+      const response = await axios.post(API_CONFIG.buildURL('/api/analisar-enem'), {
         texto: texto,
         tema: temaSelecionado?.titulo || 'Tema livre',
         userId: usuarioAtual?.uid
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
 
       if (response.data.success) {
-        setAvaliacao(response.data.avaliacao);
+        setAvaliacao(response.data.analise);
         
         // Salvar no Firestore
         if (usuarioAtual) {
           await addDoc(collection(db, 'redacoes'), {
-            userId: usuarioAtual.uid,
+            usuarioId: usuarioAtual.uid, // Usar usuarioId para consistência
+            nome: usuarioAtual.displayName || usuarioAtual.email?.split('@')[0] || 'Usuário',
             texto: texto,
-            tema: temaSelecionado?.titulo || 'Tema livre',
-            avaliacao: response.data.avaliacao,
-            dataCriacao: new Date(),
+            tema: temaSelecionado || { titulo: 'Tema livre' }, // Salvar tema completo como objeto
+            temaId: temaSelecionado?.id || 'unknown',
+            avaliacao: response.data.analise,
+            pontuacaoTotal: response.data.analise?.pontuacaoTotal || 0, // Adicionar pontuação no nível raiz
+            criadoEm: new Date(),
             palavras: contarPalavras(texto),
             caracteres: contarCaracteres(texto)
           });
 
           // Atualizar estatísticas do usuário
           const userRef = doc(db, 'usuarios', usuarioAtual.uid);
-          await updateDoc(userRef, {
-            totalRedacoes: increment(1),
-            ultimaRedacao: new Date()
-          });
+          try {
+            // Verificar se o documento existe
+            const userDoc = await getDoc(userRef);
+            if (userDoc.exists()) {
+              // Documento existe, atualizar
+              await updateDoc(userRef, {
+                totalRedacoes: increment(1),
+                ultimaRedacao: new Date()
+              });
+            } else {
+              // Documento não existe, criar
+              await setDoc(userRef, {
+                nome: usuarioAtual.displayName || usuarioAtual.email?.split('@')[0] || 'Usuário',
+                email: usuarioAtual.email,
+                totalRedacoes: 1,
+                ultimaRedacao: new Date(),
+                criadoEm: new Date()
+              });
+            }
+          } catch (updateError) {
+            // Não falhar a operação por causa disso
+          }
         }
       }
     } catch (error) {
       setErrorMessage('Erro ao analisar redação. Tente novamente.');
-      console.error('Erro ao analisar:', error);
     } finally {
-      setIsLoading(false);
+      setIsAnalyzing(false);
     }
   };
 
-  // Sugerir melhorias
+  // Sugerir melhorias com Agente Corretor ENEM
   const sugerirMelhorias = async () => {
     if (!texto.trim()) {
       setErrorMessage('Por favor, escreva sua redação antes de solicitar sugestões.');
       return;
     }
 
-    setIsLoading(true);
+    setIsSuggesting(true);
     setErrorMessage('');
 
     try {
-      const response = await axios.post(`${API_CONFIG.BASE_URL}/analyze`, {
+      const token = await usuarioAtual.getIdToken();
+      const response = await axios.post(API_CONFIG.buildURL('/api/analisar-enem'), {
         texto: texto,
         tema: temaSelecionado?.titulo || 'Tema livre',
-        userId: usuarioAtual?.uid,
-        tipoAnalise: 'sugestoes'
+        userId: usuarioAtual?.uid
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
 
       if (response.data.success) {
-        // Implementar modal ou seção para mostrar sugestões
-        console.log('Sugestões:', response.data.sugestoes);
+        // Usar as sugestões do agente corretor
+        const sugestoes = response.data.analise.sugestoesGerais || [];
+        
+        // Mostrar sugestões em um alert ou modal
+        if (sugestoes.length > 0) {
+          alert(`Sugestões do Corretor ENEM:\n\n${sugestoes.join('\n• ')}`);
+        } else {
+          alert('Parabéns! Sua redação está muito boa. Continue praticando!');
+        }
       }
     } catch (error) {
       setErrorMessage('Erro ao gerar sugestões. Tente novamente.');
-      console.error('Erro ao gerar sugestões:', error);
     } finally {
-      setIsLoading(false);
+      setIsSuggesting(false);
     }
   };
 
@@ -215,6 +311,35 @@ function PracticePage() {
     setAvaliacao(null);
     setTemaSelecionado(null);
     setErrorMessage('');
+  };
+
+  // Função para salvar no histórico
+  const salvarNoHistorico = async (avaliacaoData) => {
+    try {
+      
+      // A redação já foi salva no Firestore durante a análise
+      // Aqui podemos adicionar lógica adicional se necessário
+      
+      // Pequeno delay para feedback visual
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Limpar o estado para voltar à tela inicial
+      setTexto('');
+      setAvaliacao(null);
+      setTemaSelecionado(null);
+      setErrorMessage('');
+      
+      
+    } catch (error) {
+      
+      // Mesmo com erro, limpar o estado para não deixar a tela vazia
+      setTexto('');
+      setAvaliacao(null);
+      setTemaSelecionado(null);
+      setErrorMessage('');
+      
+      throw error;
+    }
   };
 
   return (
@@ -231,7 +356,7 @@ function PracticePage() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
                 <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl flex items-center justify-center mr-3">
-                  <FaPenFancy className="text-white text-lg" />
+                  <FaPenFancy className="text-white text-lg" data-no-animate />
                 </div>
                 Editor de Redação
               </h1>
@@ -280,7 +405,7 @@ function PracticePage() {
                         transition={{ duration: 0.6, delay: 0.2 }}
                       >
                         <div className="w-20 h-20 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                          <FaPenFancy className="text-white text-3xl" />
+                          <FaPenFancy className="text-white text-3xl" data-no-animate />
                         </div>
                       </motion.div>
                       
@@ -307,19 +432,25 @@ function PracticePage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.5 }}
                       >
-                        <Button
-                          variant="primary"
-                          size="lg"
+                        <motion.button
                           onClick={gerarTema}
-                          loading={isLoading}
-                          motionProps={{
-                            whileHover: { scale: 1.05 },
-                            whileTap: { scale: 0.95 }
-                          }}
+                          disabled={isGeneratingTheme}
+                          className="inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold rounded-xl hover:from-primary-600 hover:to-primary-700 transition-colors duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          transition={{ duration: 0.2 }}
                         >
-                          <FaMagic className="mr-2" />
-                          Gerar Tema com IA
-                        </Button>
+                          {isGeneratingTheme ? (
+                            <motion.div
+                              className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            />
+                          ) : (
+                            <FaMagic className="mr-2" data-animate />
+                          )}
+                          {isGeneratingTheme ? 'Gerando...' : 'Gerar Tema com IA'}
+                        </motion.button>
                       </motion.div>
                     </Card.Body>
                   </Card>
@@ -339,25 +470,112 @@ function PracticePage() {
                           <h3 className="text-lg font-semibold text-gray-900">Tema Selecionado</h3>
                           <p className="text-sm text-gray-600 mt-1">{temaSelecionado.titulo}</p>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
+                        <motion.button
                           onClick={() => setTemaSelecionado(null)}
-                          motionProps={{
-                            whileHover: { scale: 1.1 },
-                            whileTap: { scale: 0.9 }
-                          }}
+                          className="inline-flex items-center justify-center p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          transition={{ duration: 0.2 }}
                         >
-                          <FaTimes />
-                        </Button>
+                          <FaTimes data-no-animate />
+                        </motion.button>
                       </div>
                     </Card.Header>
 
                     <Card.Body>
                       {avaliacao ? (
-                        <Avaliacao avaliacao={avaliacao} />
+                        <Avaliacao 
+                          avaliacao={avaliacao} 
+                          onSaveToHistory={salvarNoHistorico}
+                          onNewRedacao={novaRedacao}
+                        />
                       ) : (
                         <div className="space-y-6">
+
+                          {/* Textos Motivadores */}
+                          {temaSelecionado?.textosMotivadores && temaSelecionado.textosMotivadores.length > 0 && (
+                            <Card variant="outlined" className="bg-blue-50 border-blue-200">
+                              <Card.Header>
+                                <div className="flex items-center space-x-2">
+                                  <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <FaFileAlt className="text-blue-600 text-xs" data-no-animate />
+                                  </div>
+                                  <h4 className="font-semibold text-blue-900">Textos Motivadores</h4>
+                                </div>
+                              </Card.Header>
+                              <Card.Body>
+                                <div className="space-y-4">
+                                  {temaSelecionado.textosMotivadores.map((texto, index) => {
+                                    const isObject = typeof texto === 'object' && texto !== null;
+                                    const conteudo = isObject ? (texto.conteudo || texto.titulo || texto.fonte) : texto;
+                                    const fonte = isObject ? texto.fonte : null;
+                                    const titulo = isObject ? texto.titulo : null;
+                                    
+                                    return (
+                                      <motion.div
+                                        key={index}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                                        className="bg-white p-4 rounded-lg border border-blue-200 shadow-sm hover:shadow-md transition-shadow duration-200"
+                                      >
+                                        <div className="flex items-start space-x-3">
+                                          <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-1">
+                                            {index + 1}
+                                          </div>
+                                          <div className="flex-1">
+                                            {titulo && (
+                                              <h5 className="font-semibold text-gray-900 text-sm mb-2">
+                                                {titulo}
+                                              </h5>
+                                            )}
+                                            <p className="text-gray-800 text-sm leading-relaxed mb-3">
+                                              {conteudo}
+                                            </p>
+                                            {fonte && (
+                                              <div className="flex items-center space-x-2 text-xs text-gray-600 bg-gray-50 px-3 py-2 rounded-lg">
+                                                <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                                                <span className="font-medium">Fonte:</span>
+                                                <span className="text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                                                  {fonte.includes('http') ? (
+                                                    <a 
+                                                      href={fonte} 
+                                                      target="_blank" 
+                                                      rel="noopener noreferrer"
+                                                      className="underline hover:no-underline inline-flex items-center space-x-1"
+                                                    >
+                                                      <span>{fonte}</span>
+                                                      <FaExternalLinkAlt className="text-xs" data-no-animate />
+                                                    </a>
+                                                  ) : (
+                                                    fonte
+                                                  )}
+                                                </span>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </motion.div>
+                                    );
+                                  })}
+                                </div>
+                                <div className="mt-4 p-3 bg-blue-100 rounded-lg">
+                                  <div className="flex items-start space-x-2">
+                                    <FaLightbulb className="text-blue-600 text-sm mt-0.5 flex-shrink-0" data-no-animate />
+                                    <div className="text-blue-800 text-xs">
+                                      <p className="mb-2">
+                                        <strong>Dica:</strong> Use esses textos como base para sua argumentação, mas desenvolva suas próprias ideias e exemplos.
+                                      </p>
+                                      <p className="text-blue-700">
+                                        <strong>💡</strong> Clique nas fontes para acessar o conteúdo original e enriquecer sua redação com dados atualizados.
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </Card.Body>
+                            </Card>
+                          )}
+
                           {/* Editor de Texto */}
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -376,15 +594,15 @@ function PracticePage() {
                           {/* Contadores */}
                           <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                             <div className="flex items-center">
-                              <FaFileAlt className="mr-2" />
+                              <FaFileAlt className="mr-2" data-no-animate />
                               {contarPalavras(texto)} palavras
                             </div>
                             <div className="flex items-center">
-                              <FaChartLine className="mr-2" />
+                              <FaChartLine className="mr-2" data-no-animate />
                               {contarCaracteres(texto)} caracteres
                             </div>
                             <div className="flex items-center">
-                              <FaClock className="mr-2" />
+                              <FaClock className="mr-2" data-no-animate />
                               ~{estimarTempoLeitura(texto)} min de leitura
           </div>
         </div>
@@ -394,7 +612,7 @@ function PracticePage() {
                             <Card.Body>
                               <div className="flex items-start space-x-3">
                                 <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                  <FaLightbulb className="text-blue-600 text-sm" />
+                                  <FaLightbulb className="text-blue-600 text-sm" data-no-animate />
                                 </div>
                                 <div>
                                   <h4 className="font-semibold text-blue-900 mb-1">Dicas para uma boa redação</h4>
@@ -419,7 +637,7 @@ function PracticePage() {
                                 className="bg-red-50 border border-red-200 rounded-xl p-4"
                               >
                                 <div className="flex items-center">
-                                  <FaExclamationTriangle className="text-red-600 mr-2" />
+                                  <FaExclamationTriangle className="text-red-600 mr-2" data-no-animate />
                                   <span className="text-red-800">{errorMessage}</span>
                                 </div>
                               </motion.div>
@@ -428,33 +646,36 @@ function PracticePage() {
 
                           {/* Botões de Ação */}
                           <div className="flex flex-col sm:flex-row gap-4">
-                            <Button
-                              variant="primary"
-                              size="lg"
+                            <motion.button
                               onClick={analisarRedacao}
-                              loading={isLoading}
-                              disabled={!texto.trim()}
-                              motionProps={{
-                                whileHover: { scale: 1.02 },
-                                whileTap: { scale: 0.98 }
-                              }}
+                              disabled={!texto.trim() || isAnalyzing}
+                              className="inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold rounded-xl hover:from-primary-600 hover:to-primary-700 transition-colors duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ duration: 0.2 }}
                             >
-                              <FaBrain className="mr-2" />
-                              Enviar para Análise
-                            </Button>
+                              {isAnalyzing ? (
+                                <motion.div
+                                  className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"
+                                  animate={{ rotate: 360 }}
+                                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                />
+                              ) : (
+                                <FaBrain className="mr-2" data-animate />
+                              )}
+                              {isAnalyzing ? 'Analisando...' : 'Enviar para Análise'}
+                            </motion.button>
                             
-                            <Button
-                              variant="outline"
-                              size="lg"
+                            <motion.button
                               onClick={novaRedacao}
-                              motionProps={{
-                                whileHover: { scale: 1.02 },
-                                whileTap: { scale: 0.98 }
-                              }}
+                              className="inline-flex items-center justify-center px-6 py-4 border-2 border-primary-500 text-primary-600 font-bold rounded-xl hover:bg-primary-50 transition-colors duration-300"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ duration: 0.2 }}
                             >
-                              <FaEdit className="mr-2" />
+                              <FaEdit className="mr-2" data-animate />
                               Nova Redação
-                            </Button>
+                            </motion.button>
                           </div>
                         </div>
                       )}
@@ -471,20 +692,21 @@ function PracticePage() {
               <Sidebar.Header>
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
-                    <FaRobot className="text-white text-sm" />
+                    <FaBrain className="text-white text-sm" data-no-animate />
                   </div>
                   <h3 className="font-semibold text-gray-900">IA Assistant</h3>
                 </div>
               </Sidebar.Header>
 
               <Sidebar.Body>
+
                 <Sidebar.Section title="Temas Disponíveis">
                   <div className="space-y-3 max-h-64 overflow-y-auto">
-                    {temas.slice(0, 5).map((tema, index) => (
+                    {temas.filter(tema => tema && tema.id).slice(0, 5).map((tema, index) => (
                       <motion.button
                         key={tema.id}
                         onClick={() => setTemaSelecionado(tema)}
-                        className={`w-full text-left p-3 rounded-xl border transition-all duration-200 ${
+                        className={`w-full text-left p-3 rounded-xl border transition-colors duration-200 ${
                           temaSelecionado?.id === tema.id
                             ? 'border-primary-500 bg-primary-50 text-primary-700'
                             : 'border-gray-200 hover:border-primary-300 hover:bg-primary-50'
@@ -497,7 +719,11 @@ function PracticePage() {
                       >
                         <div className="font-medium text-sm mb-1">{tema.titulo}</div>
                         <div className="text-xs text-gray-500">
-                          {new Date(tema.dataCriacao?.toDate()).toLocaleDateString()}
+                          {tema.dataCriacao ? (
+                            typeof tema.dataCriacao.toDate === 'function' 
+                              ? new Date(tema.dataCriacao.toDate()).toLocaleDateString()
+                              : new Date(tema.dataCriacao).toLocaleDateString()
+                          ) : 'Data não disponível'}
                         </div>
                       </motion.button>
                     ))}
@@ -506,54 +732,69 @@ function PracticePage() {
 
                 <Sidebar.Section title="Ferramentas IA">
                   <div className="space-y-3">
-                    <Button
-                      variant="primary"
-                      size="md"
+                    <motion.button
                       onClick={gerarTema}
-                      loading={isLoading}
-                      className="w-full"
-                      motionProps={{
-                        whileHover: { scale: 1.02 },
-                        whileTap: { scale: 0.98 }
-                      }}
+                      disabled={isGeneratingTheme}
+                      className="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-medium rounded-xl hover:from-primary-600 hover:to-primary-700 transition-colors duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      <FaMagic className="mr-2" />
-                      Gerar Tema
-                    </Button>
+                      {isGeneratingTheme ? (
+                        <motion.div
+                          className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        />
+                      ) : (
+                        <FaMagic className="mr-2" data-animate />
+                      )}
+                      {isGeneratingTheme ? 'Gerando...' : 'Gerar Tema'}
+                    </motion.button>
 
-                    <Button
-                      variant="secondary"
-                      size="md"
+
+                    <motion.button
                       onClick={analisarRedacao}
-                      loading={isLoading}
-                      disabled={!texto.trim()}
-                      className="w-full"
-                      motionProps={{
-                        whileHover: { scale: 1.02 },
-                        whileTap: { scale: 0.98 }
-                      }}
+                      disabled={isAnalyzing || !texto.trim()}
+                      className="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-secondary-500 to-secondary-600 text-white font-medium rounded-xl hover:from-secondary-600 hover:to-secondary-700 transition-colors duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      <FaBrain className="mr-2" />
-                      Analisar Redação
-                    </Button>
+                      {isAnalyzing ? (
+                        <motion.div
+                          className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        />
+                      ) : (
+                        <FaBrain className="mr-2" data-animate />
+                      )}
+                      {isAnalyzing ? 'Analisando...' : 'Analisar Redação'}
+                    </motion.button>
 
-                    <Button
-                      variant="success"
-                      size="md"
+                    <motion.button
                       onClick={sugerirMelhorias}
-                      loading={isLoading}
-                      disabled={!texto.trim()}
-                      className="w-full"
-                      motionProps={{
-                        whileHover: { scale: 1.02 },
-                        whileTap: { scale: 0.98 }
-                      }}
+                      disabled={isSuggesting || !texto.trim()}
+                      className="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-success-500 to-success-600 text-white font-medium rounded-xl hover:from-success-600 hover:to-success-700 transition-colors duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      <FaRocket className="mr-2" />
-                      Sugerir Melhorias
-                    </Button>
+                      {isSuggesting ? (
+                        <motion.div
+                          className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        />
+                      ) : (
+                        <FaRocket className="mr-2" data-animate />
+                      )}
+                      {isSuggesting ? 'Processando...' : 'Sugerir Melhorias'}
+                    </motion.button>
                   </div>
                 </Sidebar.Section>
+
 
                 <Sidebar.Section title="Progresso">
                   <div className="space-y-4">
@@ -564,7 +805,7 @@ function PracticePage() {
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
-                          className="bg-gradient-to-r from-primary-500 to-secondary-500 h-2 rounded-full transition-all duration-300"
+                          className="bg-gradient-to-r from-primary-500 to-secondary-500 h-2 rounded-full transition-colors duration-300"
                           style={{ width: `${Math.min((userData?.totalRedacoes || 0) * 10, 100)}%` }}
                         />
                       </div>
@@ -577,7 +818,7 @@ function PracticePage() {
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
-                          className="bg-gradient-to-r from-success-500 to-success-600 h-2 rounded-full transition-all duration-300"
+                          className="bg-gradient-to-r from-success-500 to-success-600 h-2 rounded-full transition-colors duration-300"
                           style={{ width: `${(userData?.mediaNotas || 0) / 10}%` }}
                         />
                       </div>

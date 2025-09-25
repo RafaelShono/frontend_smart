@@ -21,7 +21,8 @@ function ContatoPage() {
 
     // Integração com backend ou serviço de email
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/enviar-email`, {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5001' : 'https://backend-smart-ys4l.onrender.com');
+      const response = await fetch(`${backendUrl}/api/enviar-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

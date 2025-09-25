@@ -1,5 +1,5 @@
 // src/components/Achievements.jsx
-import React from 'react';
+import PropTypes from 'prop-types';
 
 function Achievements({ redacoes = [] }) {
   // Define achievement criteria
@@ -16,8 +16,8 @@ function Achievements({ redacoes = [] }) {
       name: 'Melhoria Contínua',
       description: 'Melhore sua nota total em pelo menos 100 pontos.',
       condition: redacoes && redacoes.length >= 2 && 
-        redacoes[0]?.pontuacaoTotal && redacoes[1]?.pontuacaoTotal &&
-        (redacoes[0].pontuacaoTotal - redacoes[1].pontuacaoTotal) >= 100,
+        redacoes[0]?.avaliacao?.pontuacaoTotal && redacoes[1]?.avaliacao?.pontuacaoTotal &&
+        (redacoes[0].avaliacao.pontuacaoTotal - redacoes[1].avaliacao.pontuacaoTotal) >= 100,
       icon: '📈',
     },
     {
@@ -25,8 +25,8 @@ function Achievements({ redacoes = [] }) {
       name: 'Especialista em Competência',
       description: 'Alcance 200 pontos em pelo menos 3 competências.',
       condition: redacoes && redacoes.some((redacao) => 
-        redacao?.competencias && 
-        redacao.competencias.filter(c => c.nota === 200).length >= 3
+        redacao?.avaliacao?.competencias && 
+        redacao.avaliacao.competencias.filter(c => c.nota === 200).length >= 3
       ),
       icon: '🏅',
     },
@@ -42,7 +42,7 @@ function Achievements({ redacoes = [] }) {
       name: 'Excelência',
       description: 'Alcance 900 pontos em uma redação.',
       condition: redacoes && redacoes.some((redacao) => 
-        redacao?.pontuacaoTotal && redacao.pontuacaoTotal >= 900
+        redacao?.avaliacao?.pontuacaoTotal && redacao.avaliacao.pontuacaoTotal >= 900
       ),
       icon: '🏆',
     },
@@ -79,5 +79,19 @@ function Achievements({ redacoes = [] }) {
     </div>
   );
 }
+
+Achievements.propTypes = {
+  redacoes: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string,
+    avaliacao: PropTypes.shape({
+      pontuacaoTotal: PropTypes.number,
+      competencias: PropTypes.arrayOf(PropTypes.shape({
+        id: PropTypes.number,
+        nota: PropTypes.number,
+        descricao: PropTypes.string
+      }))
+    })
+  }))
+};
 
 export default Achievements;

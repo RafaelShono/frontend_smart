@@ -8,7 +8,6 @@ import {
   FaSignOutAlt, 
   FaBars, 
   FaTimes, 
-  FaTrophy, 
   FaChartLine, 
   FaBookOpen, 
   FaRobot,
@@ -59,8 +58,6 @@ function Header() {
     { path: '/praticar', label: 'Praticar', icon: FaPenFancy, requiresAuth: true },
     { path: '/dashboard', label: 'Dashboard', icon: FaChartLine, requiresAuth: true },
     { path: '/minhasRedacoes', label: 'Minhas Redações', icon: FaBookOpen, requiresAuth: true },
-    { path: '/forum', label: 'Fórum', icon: FaTrophy, requiresAuth: true },
-    { path: '/news-agent', label: 'Temas IA', icon: FaRobot, requiresAuth: true },
   ];
 
   const publicNavigationItems = [
@@ -104,7 +101,7 @@ function Header() {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
                       isActive(item.path)
                         ? 'bg-primary-50 text-primary-600 font-medium shadow-sm'
                         : 'text-gray-600 hover:text-primary-600 hover:bg-primary-50'
@@ -121,7 +118,7 @@ function Header() {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
                       isActive(item.path)
                         ? 'bg-primary-50 text-primary-600 font-medium'
                         : 'text-gray-600 hover:text-primary-600 hover:bg-primary-50'
@@ -141,7 +138,7 @@ function Header() {
               <div className="relative user-menu-container">
                 <button
                   onClick={toggleUserMenu}
-                  className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200 group"
+                  className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200 group"
                 >
                   <div className="relative">
                     <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
@@ -229,7 +226,7 @@ function Header() {
                 </Link>
                 <Link
                   to="/cadastro"
-                  className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-medium rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-medium rounded-xl hover:from-primary-600 hover:to-primary-700 transition-colors duration-300 shadow-lg hover:shadow-xl"
                 >
                   Começar Agora
                 </Link>
@@ -336,7 +333,7 @@ function Header() {
                   
                   <Link
                     to="/cadastro"
-                    className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-medium rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 shadow-lg hover:shadow-xl mx-4"
+                    className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-medium rounded-xl hover:from-primary-600 hover:to-primary-700 transition-colors duration-300 shadow-lg hover:shadow-xl mx-4"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Começar Agora

@@ -58,7 +58,7 @@ function LandingPage() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, delay: 0.4 }}
                             >
-                                Receba feedback instantâneo, sugestões de melhoria e análise detalhada das 5 competências do ENEM. 
+                                Receba feedback instantâneo, análise detalhada com marcação visual de erros e sugestões específicas das 5 competências do ENEM. 
                                 Sua jornada para a nota 1000 começa aqui.
                             </motion.p>
 
@@ -299,8 +299,8 @@ function LandingPage() {
                             },
                             {
                                 icon: FaChartLine,
-                                title: "Análise Detalhada",
-                                description: "Feedback completo para cada competência, com sugestões específicas de melhoria e exemplos práticos.",
+                                title: "Análise Detalhada com Marcação Visual",
+                                description: "Sistema inovador que marca erros diretamente no texto com cores específicas: ortografia, conectivos, repetições e muito mais!",
                                 color: "success"
                             },
                             {
@@ -366,6 +366,160 @@ function LandingPage() {
                                 </motion.div>
                             );
                         })}
+                    </div>
+                </div>
+            </section>
+
+            {/* Análise Detalhada Section */}
+            <section className="py-20 bg-gradient-to-br from-primary-50 to-secondary-50">
+                <div className="container">
+                    <motion.div 
+                        className="text-center mb-16"
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                        viewport={{ once: true }}
+                    >
+                        <h2 className="text-4xl font-bold text-gray-900 mb-4">
+                            🎯 Análise Detalhada com Marcação Visual
+                        </h2>
+                        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                            Sistema inovador que marca erros diretamente no texto com cores específicas, 
+                            facilitando a identificação e correção de problemas.
+                        </p>
+                    </motion.div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                        {/* Visual Demo */}
+                        <motion.div 
+                            className="relative"
+                            initial={{ opacity: 0, x: -50 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.8 }}
+                            viewport={{ once: true }}
+                        >
+                            <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-200">
+                                <div className="mb-6">
+                                    <h3 className="text-xl font-bold text-gray-800 mb-2">📝 Redação com Marcações</h3>
+                                    <p className="text-sm text-gray-600">Clique nas marcações coloridas para ver detalhes</p>
+                                </div>
+                                
+                                {/* Mock Text with Markings */}
+                                <div className="prose max-w-none leading-relaxed text-gray-800 text-sm">
+                                    <p>
+                                        A sociedade brasileira enfrenta <span className="bg-red-100 border-b-2 border-red-500 px-1">serios</span> desafios relacionados à tecnologia e educação. 
+                                        <span className="bg-orange-100 border-b-2 border-orange-500 px-1">Além disso</span>, é importante destacar que 
+                                        <span className="bg-orange-100 border-b-2 border-orange-500 px-1">além disso</span>, muitos jovens não têm acesso adequado.
+                                    </p>
+                                    <p>
+                                        Primeiramente, podemos observar que a <span className="bg-yellow-100 border-b-2 border-yellow-500 px-1">tecnologia</span> pode ser uma ferramenta importante. 
+                                        A <span className="bg-yellow-100 border-b-2 border-yellow-500 px-1">tecnologia</span> revolucionou a educação. 
+                                        A <span className="bg-yellow-100 border-b-2 border-yellow-500 px-1">tecnologia</span> está presente em todos os lugares.
+                                    </p>
+                                </div>
+
+                                {/* Legend */}
+                                <div className="mt-6 grid grid-cols-2 gap-3 text-xs">
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-4 h-4 bg-red-100 border border-red-500 rounded"></div>
+                                        <span>🔴 Ortografia</span>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-4 h-4 bg-orange-100 border border-orange-500 rounded"></div>
+                                        <span>🟠 Conectivos</span>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-4 h-4 bg-yellow-100 border border-yellow-500 rounded"></div>
+                                        <span>🟡 Repetições</span>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-4 h-4 bg-blue-100 border border-blue-500 rounded"></div>
+                                        <span>🔵 Vocabulário</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Features List */}
+                        <motion.div 
+                            className="space-y-8"
+                            initial={{ opacity: 0, x: 50 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.8 }}
+                            viewport={{ once: true }}
+                        >
+                            {[
+                                {
+                                    icon: "🔴",
+                                    title: "Erros Ortográficos",
+                                    description: "Identifica erros de ortografia, acentuação e concordância com sugestões específicas de correção."
+                                },
+                                {
+                                    icon: "🟠", 
+                                    title: "Conectivos e Coesão",
+                                    description: "Detecta repetições de conectivos e sugere alternativas para melhorar a fluidez do texto."
+                                },
+                                {
+                                    icon: "🟡",
+                                    title: "Repetições Vocabulares",
+                                    description: "Marca palavras repetidas e sugere sinônimos para enriquecer o vocabulário."
+                                },
+                                {
+                                    icon: "🔵",
+                                    title: "Melhorias de Vocabulário",
+                                    description: "Identifica oportunidades de usar termos mais precisos e formais."
+                                },
+                                {
+                                    icon: "🟣",
+                                    title: "Problemas Estruturais",
+                                    description: "Analisa a estrutura da redação, tese, argumentação e proposta de intervenção."
+                                },
+                                {
+                                    icon: "🟢",
+                                    title: "Pontos Fortes",
+                                    description: "Destaca os acertos e pontos positivos da redação para reforçar o aprendizado."
+                                }
+                            ].map((feature, index) => (
+                                <motion.div 
+                                    key={index}
+                                    className="flex items-start space-x-4"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                                    viewport={{ once: true }}
+                                >
+                                    <div className="text-2xl">{feature.icon}</div>
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                                        <p className="text-gray-600">{feature.description}</p>
+                                    </div>
+                                </motion.div>
+                            ))}
+
+                            {/* CTA */}
+                            <motion.div 
+                                className="pt-8"
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.8 }}
+                                viewport={{ once: true }}
+                            >
+                                <Button
+                                    variant="primary"
+                                    size="lg"
+                                    motionProps={{
+                                        whileHover: { scale: 1.05 },
+                                        whileTap: { scale: 0.95 }
+                                    }}
+                                >
+                                    <Link to="/praticar" className="flex items-center">
+                                        <FaPenFancy className="mr-2" />
+                                        Experimentar Análise Detalhada
+                                        <FaArrowRight className="ml-2" />
+                                    </Link>
+                                </Button>
+                            </motion.div>
+                        </motion.div>
                     </div>
                 </div>
             </section>

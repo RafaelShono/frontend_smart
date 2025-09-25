@@ -45,23 +45,58 @@ function Dashboard() {
     if (usuarioAtual) {
       fetchDashboardData();
     }
-  }, [usuarioAtual]);
+  }, [usuarioAtual]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Calcular estatísticas quando as redações forem carregadas
   useEffect(() => {
-    console.log('🔄 useEffect redacoes executado, redações:', redacoes.length);
     fetchStats();
-  }, [redacoes]);
+  }, [redacoes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      await Promise.all([
+      if (!usuarioAtual || !usuarioAtual.uid) {
+        setRedacoes([]);
+        setLeaderboard([]);
+        setStats({
+          totalRedacoes: 0,
+          mediaNotas: 0,
+          melhorNota: 0,
+          streakAtual: 0,
+          redacoesEsteMes: 0,
+          evolucao: 0
+        });
+        return;
+      }
+      
+      // Executar as buscas em paralelo
+      const [redacoesResult, leaderboardResult] = await Promise.allSettled([
         fetchRedacoes(),
         fetchLeaderboard()
       ]);
+      
+      // Verificar se houve erros
+      if (redacoesResult.status === 'rejected') {
+        console.error('Erro ao buscar redações:', redacoesResult.reason);
+      }
+      
+      if (leaderboardResult.status === 'rejected') {
+        console.error('Erro ao buscar leaderboard:', leaderboardResult.reason);
+      }
+      
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard:', error);
+      // Definir valores padrão em caso de erro
+      setRedacoes([]);
+      setLeaderboard([]);
+      setStats({
+        totalRedacoes: 0,
+        mediaNotas: 0,
+        melhorNota: 0,
+        streakAtual: 0,
+        redacoesEsteMes: 0,
+        evolucao: 0
+      });
     } finally {
       setLoading(false);
     }
@@ -69,37 +104,56 @@ function Dashboard() {
 
   const fetchRedacoes = async () => {
     try {
-      console.log('🔍 Buscando redações para usuário:', usuarioAtual.uid);
-      
-      let q = query(
-        collection(db, 'redacoes'),
-        where('usuarioId', '==', usuarioAtual.uid),
-        orderBy('criadoEm', 'desc')
-      );
-      
-      let querySnapshot;
-      try {
-        querySnapshot = await getDocs(q);
-        console.log('✅ Query com orderBy executada com sucesso');
-      } catch (indexError) {
-        console.warn('⚠️ Índice não encontrado, buscando sem orderBy:', indexError);
-        q = query(
-          collection(db, 'redacoes'),
-          where('usuarioId', '==', usuarioAtual.uid)
-        );
-        querySnapshot = await getDocs(q);
-        console.log('✅ Query sem orderBy executada com sucesso');
+      if (!usuarioAtual || !usuarioAtual.uid) {
+        setRedacoes([]);
+        return;
       }
       
-      const redacoesData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      // Buscar redações do usuário
+      const q = query(
+        collection(db, 'redacoes'),
+        where('usuarioId', '==', usuarioAtual.uid)
+      );
       
-      console.log('📊 Redações encontradas:', redacoesData.length);
-      console.log('📋 Dados das redações:', redacoesData);
+      const querySnapshot = await getDocs(q);
       
-      // Ordenar no cliente se necessário
+      const redacoesData = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        
+        // Processar tema com fallbacks robustos
+        let temaProcessado = data.tema;
+        
+        if (!temaProcessado) {
+          temaProcessado = { 
+            titulo: 'Tema não especificado', 
+            id: data.temaId || 'unknown',
+            descricao: 'Tema não especificado'
+          };
+        } else if (typeof temaProcessado === 'string') {
+          temaProcessado = { 
+            titulo: temaProcessado, 
+            id: data.temaId || 'unknown',
+            descricao: temaProcessado
+          };
+        } else if (typeof temaProcessado === 'object') {
+          if (!temaProcessado.titulo) {
+            temaProcessado = {
+              ...temaProcessado,
+              titulo: temaProcessado.descricao || temaProcessado.nome || 'Tema não especificado'
+            };
+          }
+        }
+        
+        return {
+          id: doc.id,
+          ...data,
+          pontuacaoTotal: data.pontuacaoTotal || (data.avaliacao && data.avaliacao.pontuacaoTotal) || 0,
+          tema: temaProcessado,
+          criadoEm: data.criadoEm || new Date()
+        };
+      });
+      
+      // Ordenar no cliente por data (mais recente primeiro)
       redacoesData.sort((a, b) => {
         const dateA = a.criadoEm?.toDate ? a.criadoEm.toDate() : new Date(a.criadoEm);
         const dateB = b.criadoEm?.toDate ? b.criadoEm.toDate() : new Date(b.criadoEm);
@@ -112,35 +166,46 @@ function Dashboard() {
         nota: r.pontuacaoTotal || 0
       })));
     } catch (error) {
-      console.error('❌ Erro ao buscar redações:', error);
+      console.error('Erro ao buscar redações:', error);
     }
   };
 
   const fetchLeaderboard = async () => {
     try {
+      // Buscar redações para leaderboard
       const q = query(
         collection(db, 'redacoes'),
-        orderBy('pontuacaoTotal', 'desc'),
-        limit(10)
+        limit(50)
       );
       
       const querySnapshot = await getDocs(q);
-      const leaderboardData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
       
-      setLeaderboard(leaderboardData);
+      const leaderboardData = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          pontuacaoTotal: data.pontuacaoTotal || (data.avaliacao && data.avaliacao.pontuacaoTotal) || 0,
+          nome: data.nome || data.usuarioNome || 'Usuário Anônimo',
+          criadoEm: data.criadoEm || new Date()
+        };
+      });
+      
+      // Ordenar no cliente por pontuação (maior primeiro)
+      leaderboardData.sort((a, b) => (b.pontuacaoTotal || 0) - (a.pontuacaoTotal || 0));
+      
+      // Pegar apenas os top 10
+      const top10 = leaderboardData.slice(0, 10);
+      
+      setLeaderboard(top10);
     } catch (error) {
       console.error('Erro ao buscar leaderboard:', error);
+      setLeaderboard([]);
     }
   };
 
   const fetchStats = () => {
-    console.log('📈 Calculando estatísticas para:', redacoes.length, 'redações');
-    
     if (!redacoes || redacoes.length === 0) {
-      console.log('📊 Nenhuma redação encontrada, definindo estatísticas zeradas');
       setStats({
         totalRedacoes: 0,
         mediaNotas: 0,
@@ -192,12 +257,99 @@ function Dashboard() {
       evolucao: Math.round(evolucao)
     };
     
-    console.log('📊 Estatísticas calculadas:', newStats);
     setStats(newStats);
   };
 
   const calculateStreak = (redacoes) => {
     if (redacoes.length === 0) return 0;
+    
+    try {
+      // Ordenar redações por data (mais recente primeiro)
+      const redacoesOrdenadas = [...redacoes].sort((a, b) => {
+        const dateA = a.criadoEm?.toDate ? a.criadoEm.toDate() : new Date(a.criadoEm);
+        const dateB = b.criadoEm?.toDate ? b.criadoEm.toDate() : new Date(b.criadoEm);
+        return dateB - dateA;
+      });
+      
+      // Criar um mapa de datas únicas (uma redação por dia)
+      const datasUnicas = new Map();
+      
+      redacoesOrdenadas.forEach(redacao => {
+        const dataRedacao = redacao.criadoEm?.toDate ? redacao.criadoEm.toDate() : new Date(redacao.criadoEm);
+        const dataKey = dataRedacao.toDateString(); // YYYY-MM-DD format
+        
+        // Manter apenas a redação com maior pontuação do dia
+        if (!datasUnicas.has(dataKey) || redacao.pontuacaoTotal > datasUnicas.get(dataKey).pontuacaoTotal) {
+          datasUnicas.set(dataKey, {
+            data: dataRedacao,
+            pontuacao: redacao.pontuacaoTotal || 0
+          });
+        }
+      });
+      
+      // Converter para array e ordenar por data (mais recente primeiro)
+      const diasComRedacao = Array.from(datasUnicas.values()).sort((a, b) => b.data - a.data);
+      
+      if (diasComRedacao.length === 0) return 0;
+      
+      // Calcular streak a partir do dia mais recente
+      let streak = 1; // Começar com 1 (o dia mais recente)
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      
+      // Se a redação mais recente não é de hoje, verificar se é de ontem
+      const redacaoMaisRecente = diasComRedacao[0].data;
+      redacaoMaisRecente.setHours(0, 0, 0, 0);
+      
+      const diferencaDias = Math.floor((hoje - redacaoMaisRecente) / (1000 * 60 * 60 * 24));
+      
+      // Se a última redação foi há mais de 1 dia, streak é 0
+      if (diferencaDias > 1) {
+        return 0;
+      }
+      
+      // Se a última redação foi há 1 dia, começar o streak de ontem
+      let dataAtual = diferencaDias === 0 ? new Date(hoje) : new Date(hoje);
+      if (diferencaDias === 1) {
+        dataAtual.setDate(dataAtual.getDate() - 1);
+      }
+      
+      // Verificar dias consecutivos
+      for (let i = 1; i < diasComRedacao.length; i++) {
+        const dataRedacao = diasComRedacao[i].data;
+        dataRedacao.setHours(0, 0, 0, 0);
+        
+        const dataEsperada = new Date(dataAtual);
+        dataEsperada.setDate(dataEsperada.getDate() - 1);
+        
+        if (dataRedacao.getTime() === dataEsperada.getTime()) {
+          streak++;
+          dataAtual = dataEsperada;
+        } else {
+          // Quebrou a sequência
+          break;
+        }
+      }
+      
+      return streak;
+      
+    } catch (error) {
+      console.error('Erro ao calcular streak:', error);
+      // Fallback: calcular streak simples baseado em dias recentes
+      return calculateSimpleStreak(redacoes);
+    }
+  };
+
+  // Função de fallback mais simples
+  const calculateSimpleStreak = (redacoes) => {
+    if (redacoes.length === 0) return 0;
+    
+    // Ordenar por data
+    const redacoesOrdenadas = [...redacoes].sort((a, b) => {
+      const dateA = a.criadoEm?.toDate ? a.criadoEm.toDate() : new Date(a.criadoEm);
+      const dateB = b.criadoEm?.toDate ? b.criadoEm.toDate() : new Date(b.criadoEm);
+      return dateB - dateA;
+    });
     
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
@@ -205,27 +357,38 @@ function Dashboard() {
     let streak = 0;
     let dataAtual = new Date(hoje);
     
-    // Ordenar redações por data (mais recente primeiro)
-    const redacoesOrdenadas = [...redacoes].sort((a, b) => {
-      const dateA = a.criadoEm?.toDate ? a.criadoEm.toDate() : new Date(a.criadoEm);
-      const dateB = b.criadoEm?.toDate ? b.criadoEm.toDate() : new Date(b.criadoEm);
-      return dateB - dateA;
-    });
+    // Verificar se há redação hoje ou ontem
+    const redacaoMaisRecente = redacoesOrdenadas[0];
+    const dataMaisRecente = redacaoMaisRecente.criadoEm?.toDate ? redacaoMaisRecente.criadoEm.toDate() : new Date(redacaoMaisRecente.criadoEm);
+    dataMaisRecente.setHours(0, 0, 0, 0);
     
-    for (const redacao of redacoesOrdenadas) {
-      const dataRedacao = redacao.criadoEm?.toDate ? redacao.criadoEm.toDate() : new Date(redacao.criadoEm);
-      dataRedacao.setHours(0, 0, 0, 0);
+    const diferencaDias = Math.floor((hoje - dataMaisRecente) / (1000 * 60 * 60 * 24));
+    
+    if (diferencaDias <= 1) {
+      // Começar o streak
+      streak = 1;
+      dataAtual = dataMaisRecente;
       
-      if (dataRedacao.getTime() === dataAtual.getTime()) {
-        streak++;
-        dataAtual.setDate(dataAtual.getDate() - 1);
-      } else if (dataRedacao.getTime() < dataAtual.getTime()) {
-        break;
+      // Verificar dias anteriores
+      for (let i = 1; i < redacoesOrdenadas.length; i++) {
+        const dataRedacao = redacoesOrdenadas[i].criadoEm?.toDate ? redacoesOrdenadas[i].criadoEm.toDate() : new Date(redacoesOrdenadas[i].criadoEm);
+        dataRedacao.setHours(0, 0, 0, 0);
+        
+        const dataEsperada = new Date(dataAtual);
+        dataEsperada.setDate(dataEsperada.getDate() - 1);
+        
+        if (dataRedacao.getTime() === dataEsperada.getTime()) {
+          streak++;
+          dataAtual = dataEsperada;
+        } else {
+          break;
+        }
       }
     }
     
     return streak;
   };
+
 
   const getScoreColor = (score) => {
     if (score >= 900) return 'text-success-600';
@@ -283,6 +446,7 @@ function Dashboard() {
             </p>
           </div>
         </motion.div>
+
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -592,7 +756,7 @@ function Dashboard() {
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">
-                            {redacao.usuarioNome || 'Usuário Anônimo'}
+                            {redacao.nome || redacao.usuarioNome || 'Usuário Anônimo'}
                           </p>
                           <p className="text-sm text-gray-600">
                             {formatDate(redacao.criadoEm)}

@@ -1,9 +1,14 @@
 // src/pages/CanceladoPage.jsx
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { FaFrown, FaWhatsapp, FaUndo } from 'react-icons/fa';
 
 function CanceladoPage() {
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    // Página de cancelamento carregada
+  }, []);
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-100 to-blue-200 flex flex-col items-center justify-center p-6">
       {/* Container */}
@@ -24,7 +29,7 @@ function CanceladoPage() {
         {/* Botões de Ação */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-4">
           <Link
-            to="/plano"
+            to="/Plano"
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md inline-flex items-center justify-center transition-all"
           >
             <FaUndo className="mr-2" />

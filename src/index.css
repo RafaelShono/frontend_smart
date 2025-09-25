@@ -1,7 +1,6 @@
 /* src/index.css */
 /* Importar o sistema de design */
 @import './styles/design-system.css';
-@import './styles/test.css';
 @import './styles/force-colors.css';
 
 @tailwind base;
@@ -75,6 +74,18 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Prevenir animações globais em ícones */
+svg:not([data-animate]) {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Garantir que apenas elementos específicos tenham animações */
+[data-no-animate] {
+  animation: none !important;
+  transition: none !important;
 }
 
 /* Focus visible melhorado */

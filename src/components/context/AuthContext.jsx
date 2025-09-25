@@ -46,7 +46,6 @@ export function AuthProvider({ children }) {
           dataCriacao: new Date(),
           ultimoAcesso: new Date()
         });
-        console.log('Documento do usuário criado:', usuario.uid);
       } else {
         // Verificar se precisa atualizar o último acesso (apenas se passou mais de 1 hora)
         const userData = userSnap.data();
@@ -58,7 +57,6 @@ export function AuthProvider({ children }) {
           await setDoc(userRef, {
             ultimoAcesso: new Date()
           }, { merge: true });
-          console.log('Último acesso atualizado para:', usuario.uid);
         }
       }
     } catch (error) {
